@@ -1,0 +1,57 @@
+<!--main container-->
+<div class="container">
+
+  <!--calculator display flow-->
+  <mat-list class="calculator">
+
+    <!--calculator display-->
+    <mat-list-item class="calculator__display">
+      <div>
+        <button mat-icon-button
+                [matMenuTriggerFor]="menu"
+                [disabled]="(HistoryObservable$ | async)?.length === 0">
+          <mat-icon>history</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item
+                  *ngFor="let ans of HistoryObservable$ | async"
+                  (click)="appendAns(ans.result)">
+            <span>{{ans.expression}}</span>
+            <span> = </span>
+            <span>{{ans.result}}</span>
+          </button>
+        </mat-menu>
+      </div>
+      <div style="font-size: 1.5rem; overflow: hidden; display: flex; justify-content: flex-end">{{ Display }}</div>
+    </mat-list-item>
+
+    <!--calculator tabs-->
+    <mat-tab-group dynamicHeight
+                   class="calculator__tabs">
+      <mat-tab *ngFor="let layout of ButtonsLayout"
+               class="calculator__tab"
+               label="{{layout.label}}">
+
+        <!--calculator buttons-->
+        <mat-grid-list cols="4"
+                       class="calculator__buttons">
+          <mat-grid-tile *ngFor="let button of layout.buttons">
+
+            <!--single button-->
+            <button class="calculator__button"
+                    custom-click
+                    (customClick)="dispatchButton($event)"
+                    [buttonData]="button"
+                    [disabled]="!isValidButton(button)"
+                    custom-button-class
+                    [toBeReplaced]="'*'"
+                    [string]="'calculator__button-*'"
+                    [customButton]="button">
+              {{button.value}}
+            </button>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-list>
+</div>
