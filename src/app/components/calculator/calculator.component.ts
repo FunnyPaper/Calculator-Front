@@ -56,7 +56,7 @@ export class CalculatorComponent implements OnInit, OnDestroy {
    * @memberof AppComponent
    */
   get Display(): string {
-    return this.__expressionStack.Stack.map(t => this.ButtonMapping.get(t)!.value).join('') || '0';
+    return this.__expressionStack.Stack.map(t => this.ButtonMapping.get(t)!.value).join('');
   }
 
   constructor(private __calculatorService: CalculatorService) {}
@@ -144,7 +144,7 @@ export class CalculatorComponent implements OnInit, OnDestroy {
     if(e.buttonData instanceof SpecialButton) {
       this.dispatchSpecialButton(e.buttonData);
     } else if (e.buttonData instanceof TokenButton) {
-      if(/^0$/.test(this.Display) && (e.buttonData.tokenData.group & this.__expressionStack.nextValidGroups()) > 0) {
+      if(/^0$/.test(this.Display) && /\d+/.test(e.buttonData.tokenData.value)) {
         this.__expressionStack.pop();
       }
       this.__expressionStack.append(e.buttonData.tokenData);
@@ -170,14 +170,12 @@ export class CalculatorComponent implements OnInit, OnDestroy {
       case SpecialToken.AC:
       {
         this.__expressionStack.clear();
-        this.appendAns('0');
       }
         break;
       case SpecialToken.BACK:
       {
         this.__expressionStack.pop();
         if (this.__expressionStack.Stack.length === 0) {
-        this.appendAns('0');
         }
       }
         break;
