@@ -56,7 +56,7 @@ export class CalculatorComponent implements OnInit, OnDestroy {
    * @memberof AppComponent
    */
   get Display(): string {
-    return this.__expressionStack.Stack.map(t => this.ButtonMapping.get(t)!.value).join('');
+    return this.__expressionStack.Stack.map(t => t.value).join('');
   }
 
   constructor(private __calculatorService: CalculatorService) {}
@@ -84,7 +84,7 @@ export class CalculatorComponent implements OnInit, OnDestroy {
 
     // Check for scientific notation (ex 1e-10)
     // Such number is to be treated as dynamic CONSTANT
-    if (/e-\d+$/i.test(displayValue)) {
+    if (/e(?:-|\+)\d+$/i.test(displayValue)) {
       keysToappend = [
         new TokenData(displayValue, ButtonGroup.CONSTANT)
       ];
