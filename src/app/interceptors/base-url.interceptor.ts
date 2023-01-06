@@ -12,7 +12,7 @@ import environment from 'src/environments/environment';
  * Url modificator (injects base url of localhost)
  */
 @Injectable()
-export default class BaseUrlInterceptor implements HttpInterceptor {
+export class BaseUrlInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req.clone({

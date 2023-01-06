@@ -43,10 +43,6 @@ export class ExpressionStack {
    * @throws error if expression can't be terminated with EQUALS token
    */
   get Expression(): IExpressionData {
-    if (!this.isValid) {
-      throw new Error('Expression is not valid');
-    }
-
     return {
       expression: this.__stack.map((e) => e.value).join('') || '0',
       options: this.__options,
@@ -155,9 +151,10 @@ export class ExpressionStack {
 
     // Get required arguments count
     // (defaults to 0-0 -> if inspected body is not a registered function)
-    const data = this.__functions.get(
-      this.__stack[i]?.value
-    ) ?? { min: 0, max: 0 };
+    const data = this.__functions.get(this.__stack[i]?.value) ?? {
+      min: 0,
+      max: 0,
+    };
     return {
       // Additional separators are allowed if max arguments count was not exceeded
       separator: separators < data.max - 1,
@@ -194,12 +191,15 @@ export class ExpressionStack {
 
     // What can be a starting point in stack
     if (this.__stack.length === 0) {
-      return result |
+      this.__valid = true;
+      return (
+        result |
         ButtonGroup.NUMBER |
         ButtonGroup.UNARY_LEFT |
         ButtonGroup.FUNCTION |
         ButtonGroup.CONSTANT |
-        ButtonGroup.OPEN_BRACKET;
+        ButtonGroup.OPEN_BRACKET
+      );
     }
 
     // Bitwise OR matching groups (what can go after)
@@ -223,11 +223,17 @@ export class ExpressionStack {
       result &= ~ButtonGroup.SEPARATOR;
     }
 
+    // Set valid property
+    this.__valid = (last & (
+      ButtonGroup.CLOSE_BRACKET |
+      ButtonGroup.CONSTANT |
+      ButtonGroup.NUMBER |
+      ButtonGroup.UNARY_RIGHT)) > 0;
+
     // If close bracket is not allowed then exclude CLOSE_BRACKET group...
-    // ...and update valid property
+    // ...and update valid property (now we have complete knowledge about expression)
     if (!close_bracket) {
       result &= ~ButtonGroup.CLOSE_BRACKET;
-      this.__valid = true;
     } else {
       this.__valid = false;
     }

@@ -6,16 +6,16 @@
 
     <!--calculator display-->
     <mat-list-item class="calculator__display">
-      <div>
+      <div *ngIf="(HistoryObservable$ | async) || [] as history">
         <button mat-icon-button
                 [matMenuTriggerFor]="menu"
-                [disabled]="(HistoryObservable$ | async)?.length === 0">
+                [disabled]="history.length === 0">
           <mat-icon>history</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
           <button mat-menu-item
-                  *ngFor="let ans of HistoryObservable$ | async"
-                  (click)="appendAns(ans.result)">
+                  *ngFor="let ans of history"
+                  (click)="Ans = ans.result; appendAns()">
             <span>{{ans.expression}}</span>
             <span> = </span>
             <span>{{ans.result}}</span>
@@ -40,7 +40,7 @@
             <!--single button-->
             <button class="calculator__button"
                     custom-click
-                    (customClick)="dispatchButton($event)"
+                    (customClick)="dispatchButtonEvent($event)"
                     [buttonData]="button"
                     [disabled]="!isValidButton(button)"
                     custom-button-class
