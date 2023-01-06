@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { ButtonGroup } from 'src/app/enums/button-group.enum';
 import { SpecialToken } from 'src/app/enums/special-token.enum';
@@ -6,7 +12,7 @@ import ButtonCustomEvent from 'src/app/events/button-custom-event.event';
 import IButtonLayout from 'src/app/interfaces/button-layout.interface';
 import IExpressionRecord from 'src/app/interfaces/expression-record.interface';
 import IFunctionData from 'src/app/interfaces/function-data.interface';
-import { Button } from 'src/app/models/button.model';
+import { Button, ICombinationKeyData } from 'src/app/models/button.model';
 import { ExpressionStack } from 'src/app/models/expression-stack.model';
 import { SpecialButton } from 'src/app/models/special-button.model';
 import { TokenButton } from 'src/app/models/token-button.model';
@@ -14,17 +20,24 @@ import TokenData from 'src/app/models/token-data.model';
 import { CalculatorService } from 'src/app/services/calculator.service';
 
 @Component({
-  selector: 'app-calculator[ButtonLayout][ButtonMapping][FunctionData]',
+  selector: 'app-calculator[ButtonLayout][FunctionData]',
   templateUrl: './calculator.component.html',
-  styleUrls: ['./calculator.component.scss']
+  styleUrls: ['./calculator.component.scss'],
 })
 export class CalculatorComponent implements OnInit, OnDestroy {
   @Input() ButtonLayout!: IButtonLayout[];
-  @Input() ButtonMapping!: Map<TokenData, TokenButton>;
   @Input() FunctionData!: IFunctionData[];
   private __calculatorServiceSubscriptions!: Subscription;
   private __expressionStack!: ExpressionStack;
   private __historyObservable$!: Observable<IExpressionRecord[]>;
+  private __ans: string = '0';
+
+  set Ans(value: string) {
+    this.__ans = value;
+  }
+  get Ans(): string {
+    return this.__ans;
+  }
 
   /**
    * Provides access to buttons layout variable
@@ -56,7 +69,9 @@ export class CalculatorComponent implements OnInit, OnDestroy {
    * @memberof AppComponent
    */
   get Display(): string {
-    return this.__expressionStack.Stack.map(t => t.value).join('');
+    return this.__expressionStack.Stack.map(
+      (t) => (TokenButton.getRegisteredTokenButton(t) as TokenButton).value
+    ).join('');
   }
 
   constructor(private __calculatorService: CalculatorService) {}
@@ -64,13 +79,29 @@ export class CalculatorComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.__calculatorServiceSubscriptions = new Subscription();
     this.__expressionStack = new ExpressionStack();
-    this.FunctionData.forEach(f => this.__expressionStack.registerFunction(f));
+    this.FunctionData.forEach((f) =>
+      this.__expressionStack.registerFunction(f)
+    );
     this.updateHistory();
-    this.appendAns('0');
   }
 
   ngOnDestroy(): void {
     this.__calculatorServiceSubscriptions.unsubscribe();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    let combination: ICombinationKeyData = {
+      alt: event.altKey,
+      ctrl: event.ctrlKey,
+      shift: event.shiftKey,
+    };
+    let button = Button.getRegisteredKey({ value: event.code, combination }) as
+      | Button
+      | undefined;
+    if (button) {
+      this.dispatchButton(button);
+    }
   }
 
   /**
@@ -78,40 +109,37 @@ export class CalculatorComponent implements OnInit, OnDestroy {
    *
    * @param displayValue value to be added
    */
-  appendAns(displayValue: string) {
+  appendAns() {
     // Array for mapped values
-    let keysToappend: TokenData[];
+    let keysToappend: TokenButton[];
 
     // Check for scientific notation (ex 1e-10)
     // Such number is to be treated as dynamic CONSTANT
-    if (/e(?:-|\+)\d+$/i.test(displayValue)) {
+    if (/e(?:-|\+)\d+$/i.test(this.Ans)) {
       keysToappend = [
-        new TokenData(displayValue, ButtonGroup.CONSTANT)
+        new TokenButton(
+          new TokenData(this.Ans, ButtonGroup.CONSTANT),
+          this.Ans
+        ),
       ];
     } else {
       keysToappend = [
         // Tokenize value
-        ...displayValue.matchAll(
-          RegExp(
-            // Regex consists of mapping keys
-            [...this.ButtonMapping.keys()]
-              .map((k) => {
-                // TODO: Better handling of special regex characters
-                return k.value.length > 1 ? `${k.value}` : `[${k.value}]`;
-              })
-              .join('|'),
-            'g'
-          )
-        ),
+        ...this.Ans.matchAll(TokenData.Regex),
       ]
         // Filter out empty (undefined and/ or null values)
         .filter((m) => m[0])
         // Get appropriate button from mapping
-        .map((m) => [...this.ButtonMapping.entries()].find(e => e[0].value == m[0])![0]);
+        .map(
+          (m) =>
+            TokenButton.getRegisteredTokenButton(
+              TokenData.getRegisteredTokenData(m[0]!) as TokenData
+            ) as TokenButton
+        );
     }
 
     // Send parsed buttons to expression stack
-    this.__expressionStack.append(...keysToappend);
+    keysToappend.forEach((b) => this.dispatchButton(b));
   }
 
   /**
@@ -126,7 +154,8 @@ export class CalculatorComponent implements OnInit, OnDestroy {
         .subscribe((e) => {
           // Always clear expression stack
           this.__expressionStack.clear();
-          this.appendAns(e);
+          this.Ans = e;
+          this.appendAns();
           // Refresh history (it now contains the last expression's result)
           this.updateHistory();
         })
@@ -140,25 +169,34 @@ export class CalculatorComponent implements OnInit, OnDestroy {
     this.__historyObservable$ = this.__calculatorService.history();
   }
 
-  dispatchButton(e: ButtonCustomEvent): void {
-    if(e.buttonData instanceof SpecialButton) {
-      this.dispatchSpecialButton(e.buttonData);
-    } else if (e.buttonData instanceof TokenButton) {
-      if(/^0$/.test(this.Display) && /\d+/.test(e.buttonData.tokenData.value)) {
-        this.__expressionStack.pop();
+  dispatchButtonEvent(e: ButtonCustomEvent): void {
+    this.dispatchButton(e.buttonData);
+  }
+
+  private dispatchButton(...buttons: Button[]): void {
+    for (let button of buttons) {
+      if (button instanceof SpecialButton) {
+        this.dispatchSpecialButton(button);
+      } else if (button instanceof TokenButton) {
+        if (
+          /(?:^|\D)0$/.test(this.Display) &&
+          /\d+/.test(button.tokenData.value)
+        ) {
+          this.__expressionStack.pop();
+        }
+        this.__expressionStack.append(button.tokenData);
       }
-      this.__expressionStack.append(e.buttonData.tokenData);
     }
   }
 
   isValidButton(b: Button): boolean {
-    if(b instanceof SpecialButton) {
+    if (b instanceof SpecialButton) {
       return this.isValidSpecialButton(b);
     }
     if (b instanceof TokenButton) {
       // Specific rules for '0'
-      if(/[^0-9.]0$/.test(this.Display) && /\d+/.test(b.value)) {
-        return false
+      if (/[^0-9.]0$/.test(this.Display) && /\d+/.test(b.value)) {
+        return false;
       }
       return (this.__expressionStack.nextValidGroups() & b.tokenData.group) > 0;
     }
@@ -166,35 +204,48 @@ export class CalculatorComponent implements OnInit, OnDestroy {
   }
 
   private dispatchSpecialButton(button: SpecialButton) {
-    switch(button.specialType) {
+    switch (button.specialType) {
       case SpecialToken.AC:
-      {
-        this.__expressionStack.clear();
-      }
+        {
+          this.__expressionStack.clear();
+        }
         break;
       case SpecialToken.BACK:
-      {
-        this.__expressionStack.pop();
-        if (this.__expressionStack.Stack.length === 0) {
+        {
+          this.__expressionStack.pop();
+          if (this.__expressionStack.Stack.length === 0) {
+          }
         }
-      }
         break;
-      case SpecialToken.RAD: this.__expressionStack.Options = { rad: true };
+      case SpecialToken.RAD:
+        this.__expressionStack.Options = { rad: true };
         break;
-      case SpecialToken.DEG: this.__expressionStack.Options = { rad: false };
+      case SpecialToken.DEG:
+        this.__expressionStack.Options = { rad: false };
         break;
-      case SpecialToken.EQUALS: this.evaluate();
+      case SpecialToken.EQUALS:
+        {
+          if (this.__expressionStack.isValid) {
+            this.evaluate();
+          }
+        }
+        break;
+      case SpecialToken.ANS:
+        this.appendAns();
         break;
     }
   }
 
   private isValidSpecialButton(button: SpecialButton): boolean {
-    switch(button.specialType) {
-      case SpecialToken.AC:
-      case SpecialToken.BACK: return true;
-      case SpecialToken.RAD: return !this.__expressionStack.Options.rad!;
-      case SpecialToken.DEG: return this.__expressionStack.Options.rad!;
-      case SpecialToken.EQUALS: return this.__expressionStack.isValid;
+    switch (button.specialType) {
+      case SpecialToken.RAD:
+        return !this.__expressionStack.Options.rad!;
+      case SpecialToken.DEG:
+        return this.__expressionStack.Options.rad!;
+      case SpecialToken.EQUALS:
+        return this.__expressionStack.isValid;
+      default:
+        return true;
     }
   }
 }

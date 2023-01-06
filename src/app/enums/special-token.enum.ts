@@ -1,3 +1,3 @@
 export enum SpecialToken {
-  AC, BACK, RAD, DEG, EQUALS
+  AC, BACK, RAD, DEG, EQUALS, ANS
 }

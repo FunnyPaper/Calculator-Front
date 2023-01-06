@@ -1,0 +1,19 @@
+.main {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  &__message {
+      flex-direction: column;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+  }
+
+  &__button {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      cursor: pointer;
+  }
+}
