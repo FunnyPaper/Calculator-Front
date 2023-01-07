@@ -1,5 +1,7 @@
-import { IButton, Button, IKeyData } from './button.model';
-import TokenData from './token-data.model';
+import { IButton } from '../interfaces/button.interface';
+import { IKeyData } from '../interfaces/key-data.interface';
+import { Button } from './button.model';
+import { TokenData } from './token-data.model';
 
 export interface ITokenButton extends IButton {
   get tokenData(): TokenData;
@@ -19,7 +21,7 @@ export class TokenButton extends Button implements ITokenButton {
   }
   static getRegisteredTokenButton(
     key?: TokenData
-  ): [IKeyData, TokenButton][] | TokenButton | undefined {
+  ): [TokenData, TokenButton][] | TokenButton | undefined {
     if (key) {
       return [...TokenButton.__tokenDataRegistry.entries()].find(
         (p) => JSON.stringify(p[0]) === JSON.stringify(key)

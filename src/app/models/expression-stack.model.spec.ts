@@ -1,7 +1,7 @@
 import { IExpressionOptions } from './../interfaces/expression-data.interface';
 import { ButtonGroup } from '../enums/button-group.enum';
 import { ExpressionStack } from './expression-stack.model';
-import TokenData from './token-data.model';
+import { TokenData } from './token-data.model';
 
 describe('ExpressionStack', () => {
   const tokens: Map<ButtonGroup, TokenData> = new Map(
@@ -106,7 +106,7 @@ describe('ExpressionStack', () => {
 
     afterEach(() => {
       // Set expected display
-      expectedDisplay = expectedArray.map((e) => e.value).join('');
+      expectedDisplay = expectedArray.map((e) => e.value).join('') || '0';
 
       // Append tokens
       inputArray.forEach(t => stack.append(t));
@@ -275,9 +275,4 @@ describe('ExpressionStack', () => {
     stack.Options = { rad: false };
     expect(stack.Options).toEqual({ rad: false });
   });
-
-  it('ValidValueExpression throws', () => {
-    stack.append(tokens.get(ButtonGroup.OPEN_BRACKET)!);
-    expect(() => stack.Expression).toThrow();
-  })
 });

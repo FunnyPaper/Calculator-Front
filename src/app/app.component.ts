@@ -4,7 +4,7 @@ import { SpecialButton } from './models/special-button.model';
 import { Component } from '@angular/core';
 import IButtonLayout from './interfaces/button-layout.interface';
 import { ButtonGroup } from './enums/button-group.enum';
-import TokenData from './models/token-data.model';
+import { TokenData } from './models/token-data.model';
 import IFunctionData from './interfaces/function-data.interface';
 
 @Component({

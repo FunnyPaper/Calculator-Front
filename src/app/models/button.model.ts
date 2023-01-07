@@ -1,24 +1,10 @@
-export interface ICombinationKeyData {
-  alt?: boolean;
-  ctrl?: boolean;
-  shift?: boolean;
-}
+import { IButton } from "../interfaces/button.interface";
+import { IKeyData } from "../interfaces/key-data.interface";
 
 const combination = {
   alt: false,
   ctrl: false,
   shift: false,
-}
-
-export interface IKeyData {
-  value: string;
-  combination?: ICombinationKeyData;
-}
-
-export interface IButton {
-  get key(): IKeyData | undefined;
-  get value(): string;
-  set value(value: string);
 }
 
 export abstract class Button implements IButton {

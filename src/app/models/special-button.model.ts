@@ -1,5 +1,7 @@
+import { IButton } from '../interfaces/button.interface';
+import { IKeyData } from '../interfaces/key-data.interface';
 import { SpecialToken } from './../enums/special-token.enum';
-import { Button, IButton, IKeyData } from './button.model';
+import { Button } from './button.model';
 
 export interface ISpecialButton extends IButton {
   get specialType(): SpecialToken;

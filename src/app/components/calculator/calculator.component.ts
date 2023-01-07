@@ -10,13 +10,14 @@ import { ButtonGroup } from 'src/app/enums/button-group.enum';
 import { SpecialToken } from 'src/app/enums/special-token.enum';
 import ButtonCustomEvent from 'src/app/events/button-custom-event.event';
 import IButtonLayout from 'src/app/interfaces/button-layout.interface';
+import { ICombinationKeyData } from 'src/app/interfaces/combination-key-data.interface';
 import IExpressionRecord from 'src/app/interfaces/expression-record.interface';
 import IFunctionData from 'src/app/interfaces/function-data.interface';
-import { Button, ICombinationKeyData } from 'src/app/models/button.model';
+import { Button } from 'src/app/models/button.model';
 import { ExpressionStack } from 'src/app/models/expression-stack.model';
 import { SpecialButton } from 'src/app/models/special-button.model';
 import { TokenButton } from 'src/app/models/token-button.model';
-import TokenData from 'src/app/models/token-data.model';
+import { TokenData } from 'src/app/models/token-data.model';
 import { CalculatorService } from 'src/app/services/calculator.service';
 
 @Component({

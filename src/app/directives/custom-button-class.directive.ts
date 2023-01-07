@@ -1,4 +1,4 @@
-import { AfterViewInit, Directive, HostBinding, Input, OnInit } from '@angular/core';
+import { Directive, HostBinding, Input, OnInit } from '@angular/core';
 import { ButtonGroup } from '../enums/button-group.enum';
 import { Button } from '../models/button.model';
 import { SpecialButton } from '../models/special-button.model';
@@ -22,13 +22,13 @@ export class CustomButtonClassDirective implements OnInit {
       return `special`;
     }
     if (b instanceof TokenButton) {
-      if((b.tokenData.group & ButtonGroup.BINARY |
+      if((b.tokenData.group & (ButtonGroup.BINARY |
         ButtonGroup.UNARY_LEFT |
-        ButtonGroup.UNARY_RIGHT) > 0) {
+        ButtonGroup.UNARY_RIGHT)) > 0) {
           return 'operator';
       }
-      if((b.tokenData.group & ButtonGroup.CONSTANT |
-        ButtonGroup.NUMBER) > 0) {
+      if((b.tokenData.group & (ButtonGroup.CONSTANT |
+        ButtonGroup.NUMBER)) > 0) {
           return 'operand';
       }
       if((b.tokenData.group & ButtonGroup.FUNCTION) > 0) {

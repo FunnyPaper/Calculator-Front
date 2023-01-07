@@ -1,7 +1,7 @@
 import environment from 'src/environments/environment';
 import { HttpHandler, HttpRequest, HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import BaseUrlInterceptor from './base-url.interceptor'
+import { BaseUrlInterceptor } from './base-url.interceptor'
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
