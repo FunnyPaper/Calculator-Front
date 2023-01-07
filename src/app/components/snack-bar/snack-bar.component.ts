@@ -18,11 +18,11 @@ export class SnackBarComponent {
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if(event.code === 'Escape') {
-      this.closeBar();
+      this.close();
     }
   }
 
-  closeBar(): void {
+  close(): void {
     this.snackBarRef.dismiss();
   }
 }

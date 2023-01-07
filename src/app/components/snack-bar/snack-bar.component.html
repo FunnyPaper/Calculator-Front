@@ -1,11 +1,11 @@
-<div class="main">
-  <div class="main__message">
-    <span style="display: block">
+<div class="bar">
+  <div class="bar__error">
+    <span class="block">
       {{error}}
     </span>
   </div>
-  <div class="main__button">
-    <div (click)="closeBar()" (keydown)="closeBar()">
+  <div class="bar__button">
+    <div (click)="close()" (keydown)="close()">
       <mat-icon>close</mat-icon>
     </div>
   </div>
