@@ -15,14 +15,15 @@
         <mat-menu #menu="matMenu">
           <button mat-menu-item
                   *ngFor="let ans of history"
-                  (click)="Ans = ans.result; appendAns()">
+                  (click)="Ans = ans.result; appendAns()"
+                  class="color-primary">
             <span>{{ans.expression}}</span>
             <span> = </span>
             <span>{{ans.result}}</span>
           </button>
         </mat-menu>
       </div>
-      <div style="font-size: 1.5rem; overflow: hidden; display: flex; justify-content: flex-end">{{ Display }}</div>
+      <div class="display__text">{{ Display }}</div>
     </mat-list-item>
 
     <!--calculator tabs-->

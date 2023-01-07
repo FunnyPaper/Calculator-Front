@@ -1,19 +1,23 @@
-.main {
+.bar {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 
-  &__message {
-      flex-direction: column;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+  &__error {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
   }
 
   &__button {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    cursor: pointer;
   }
+}
+
+.block {
+  display: block;
 }
