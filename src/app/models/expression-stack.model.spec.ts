@@ -6,10 +6,7 @@ import { TokenData } from './token-data.model';
 describe('ExpressionStack', () => {
   const tokens: Map<ButtonGroup, TokenData> = new Map(
     Object.values(ButtonGroup).map((v, i) => {
-      return [
-        v as ButtonGroup,
-        new TokenData(`TOKEN${i}`, v as ButtonGroup)
-      ];
+      return [v as ButtonGroup, new TokenData(`TOKEN${i}`, v as ButtonGroup)];
     })
   );
 
@@ -43,9 +40,7 @@ describe('ExpressionStack', () => {
     expect(stack.Stack.length)
       .withContext('expression stack length')
       .toEqual(0);
-    expect(stack.Stack)
-      .withContext('expression stack')
-      .toEqual([]);
+    expect(stack.Stack).withContext('expression stack').toEqual([]);
     expect(stack.Expression)
       .withContext('full expression')
       .toEqual({
@@ -55,6 +50,7 @@ describe('ExpressionStack', () => {
     expect(stack.Options)
       .withContext('additional options')
       .toEqual({ rad: false });
+    expect(stack.isValid).withContext('is expression valid').toBeTruthy();
   });
 
   describe('append', () => {
@@ -109,7 +105,7 @@ describe('ExpressionStack', () => {
       expectedDisplay = expectedArray.map((e) => e.value).join('') || '0';
 
       // Append tokens
-      inputArray.forEach(t => stack.append(t));
+      inputArray.forEach((t) => stack.append(t));
 
       // Tests
       expect(stack.Stack.length).toEqual(expectedArray.length);
@@ -141,7 +137,7 @@ describe('ExpressionStack', () => {
         ButtonGroup.UNARY_RIGHT |
         ButtonGroup.BINARY |
         ButtonGroup.NUMBER |
-        ButtonGroup.DOT
+        ButtonGroup.DOT;
     });
     it('after left unary', () => {
       inputArray = [tokens.get(ButtonGroup.UNARY_LEFT)!];
@@ -156,8 +152,7 @@ describe('ExpressionStack', () => {
         tokens.get(ButtonGroup.NUMBER)!,
         tokens.get(ButtonGroup.UNARY_RIGHT)!,
       ];
-      expectedGroups =
-        ButtonGroup.UNARY_RIGHT | ButtonGroup.BINARY;
+      expectedGroups = ButtonGroup.UNARY_RIGHT | ButtonGroup.BINARY;
     });
     it('after binary', () => {
       inputArray = [
@@ -177,8 +172,7 @@ describe('ExpressionStack', () => {
     });
     it('after constant', () => {
       inputArray = [tokens.get(ButtonGroup.CONSTANT)!];
-      expectedGroups =
-        ButtonGroup.UNARY_RIGHT | ButtonGroup.BINARY;
+      expectedGroups = ButtonGroup.UNARY_RIGHT | ButtonGroup.BINARY;
     });
     it('after separator', () => {
       inputArray = [
@@ -217,9 +211,7 @@ describe('ExpressionStack', () => {
         tokens.get(ButtonGroup.CLOSE_BRACKET)!,
       ];
       expectedGroups =
-        ButtonGroup.UNARY_RIGHT |
-        ButtonGroup.BINARY |
-        ButtonGroup.SEPARATOR;
+        ButtonGroup.UNARY_RIGHT | ButtonGroup.BINARY | ButtonGroup.SEPARATOR;
       // separators are related to custom functions
       const funcData = tokens.get(ButtonGroup.FUNCTION)!;
       stack.registerFunction({ key: funcData.value });
@@ -236,37 +228,43 @@ describe('ExpressionStack', () => {
 
     it('empty stack', () => {
       expect(stack.Stack).toEqual([]);
-      stack.clear()
+      stack.clear();
       expect(stack.Stack).toEqual([]);
-    })
+    });
 
     it('not empty stack', () => {
-      inputArray = [tokens.get(ButtonGroup.NUMBER)!, tokens.get(ButtonGroup.NUMBER)!];
+      inputArray = [
+        tokens.get(ButtonGroup.NUMBER)!,
+        tokens.get(ButtonGroup.NUMBER)!,
+      ];
       stack.append(...inputArray);
       expect(stack.Stack).toEqual(inputArray);
       stack.clear();
       expect(stack.Stack).toEqual([]);
-    })
-  })
+    });
+  });
 
   describe('pop', () => {
     let inputArray: TokenData[];
 
     it('empty stack', () => {
       expect(stack.Stack).toEqual([]);
-      stack.pop()
+      stack.pop();
       expect(stack.Stack).toEqual([]);
-    })
+    });
 
     it('not empty stack', () => {
-      inputArray = [tokens.get(ButtonGroup.NUMBER)!, tokens.get(ButtonGroup.NUMBER)!];
+      inputArray = [
+        tokens.get(ButtonGroup.NUMBER)!,
+        tokens.get(ButtonGroup.NUMBER)!,
+      ];
       stack.append(...inputArray);
       expect(stack.Stack).toEqual(inputArray);
       stack.pop();
       let [x, ...copy] = inputArray;
       expect(stack.Stack).toEqual(copy);
-    })
-  })
+    });
+  });
 
   it('setOptions', () => {
     expect(stack.Options).toEqual({ rad: false });
@@ -274,5 +272,22 @@ describe('ExpressionStack', () => {
     expect(stack.Options).toEqual({ rad: true });
     stack.Options = { rad: false };
     expect(stack.Options).toEqual({ rad: false });
+  });
+
+  it('registerFunction', () => {
+    stack.registerFunction({ key: 'SIN', args: { min: 2, max: 2 }});
+    stack.registerFunction({ key: 'COS', args: { min: 3 }});
+    stack.registerFunction({ key: 'TAN' });
+
+    expect(stack['__functions'].get('SIN')).toEqual({ min: 2, max: 2});
+    expect(stack['__functions'].get('COS')).toEqual({ min: 3, max: 1});
+    expect(stack['__functions'].get('TAN')).toEqual({ min: 1, max: 1});
+  });
+
+  it('unregisterFunction', () => {
+    stack.registerFunction({ key: 'SIN' });
+    expect(stack['__functions'].get('SIN')).toEqual({ min: 1, max: 1});
+    stack.unregisterFunction('SIN');
+    expect(stack['__functions'].size).toEqual(0);
   });
 });

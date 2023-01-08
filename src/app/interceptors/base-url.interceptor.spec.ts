@@ -41,8 +41,8 @@ describe('BaseUrlInterceptor', () => {
     controller.verify();
   });
 
-  it(`check url for api starts with ${environment.baseUrl}`, () => {
-    client.get(testUrl).subscribe();
+  it(`check url for api starts with ${environment.baseUrl}`, (done) => {
+    client.get(testUrl).subscribe().add(done);
 
     const req = controller.expectOne(`${environment.baseUrl}${testUrl}`);
     expect(req.request.url).toEqual(`${environment.baseUrl}${testUrl}`);

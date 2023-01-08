@@ -22,7 +22,7 @@ export class TokenButton extends Button implements ITokenButton {
   static getRegisteredTokenButton(
     key?: TokenData
   ): [TokenData, TokenButton][] | TokenButton | undefined {
-    if (key) {
+    if (key != null) {
       return [...TokenButton.__tokenDataRegistry.entries()].find(
         (p) => JSON.stringify(p[0]) === JSON.stringify(key)
       )?.[1];

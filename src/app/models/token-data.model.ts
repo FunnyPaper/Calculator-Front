@@ -30,7 +30,7 @@ export class TokenData {
     );
   }
   static getRegisteredTokenData(key?: string): [string, TokenData][] | TokenData | undefined {
-    if (key) {
+    if (key != null) {
       return TokenData.__tokenDataRegistry.get(key);
     }
 
