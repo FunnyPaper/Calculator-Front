@@ -46,7 +46,11 @@ export class AppComponent {
       { key: 'LN' },
       { key: 'LOG', args: { max: 2 } },
       { key: 'POW', args: { max: Number.POSITIVE_INFINITY } },
-      { key: 'ROOT', args: { max: Number.POSITIVE_INFINITY } }
+      { key: 'ROOT', args: { max: Number.POSITIVE_INFINITY } },
+      { key: 'MIN', args: { max: Number.POSITIVE_INFINITY } },
+      { key: 'MAX', args: { max: Number.POSITIVE_INFINITY } },
+      { key: 'FDIV', args: { max: 2 } },
+      { key: 'MOD', args: { min: 2, max: 2 } },
     ]
   }
 
@@ -99,6 +103,7 @@ export class AppComponent {
             new TokenButton(new TokenData('+', ButtonGroup.BINARY), '+', { value: 'Equal' }),
             new TokenButton(new TokenData('.', ButtonGroup.DOT), '.', { value: 'Period' }),
             new TokenButton(new TokenData('0', ButtonGroup.NUMBER), '0', { value: 'Digit0' }),
+            new TokenButton(new TokenData('^', ButtonGroup.BINARY), '^', { value: 'Digit6', combination: { shift: true }}),
             new SpecialButton(SpecialToken.EQUALS, '=', { value: 'Enter' }),
         ],
       },
@@ -120,6 +125,10 @@ export class AppComponent {
           new TokenButton(new TokenData('TAN', ButtonGroup.FUNCTION), 'TAN'),
           new TokenButton(new TokenData('ROOT', ButtonGroup.FUNCTION), 'ROOT'),
           new TokenButton(new TokenData('POW', ButtonGroup.FUNCTION), 'POW'),
+          new TokenButton(new TokenData('FDIV', ButtonGroup.FUNCTION), 'FDIV'),
+          new TokenButton(new TokenData('MIN', ButtonGroup.FUNCTION), 'MIN'),
+          new TokenButton(new TokenData('MAX', ButtonGroup.FUNCTION), 'MAX'),
+          new TokenButton(new TokenData('MOD', ButtonGroup.FUNCTION), 'MOD'),
           new SpecialButton(SpecialToken.ANS, 'ANS', { value: 'KeyA' }),
         ],
       },
