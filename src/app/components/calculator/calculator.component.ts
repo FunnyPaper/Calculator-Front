@@ -179,8 +179,9 @@ export class CalculatorComponent implements OnInit, OnDestroy {
       if (button instanceof SpecialButton) {
         this.dispatchSpecialButton(button);
       } else if (button instanceof TokenButton) {
+        // Specific rules for '0'
         if (
-          /(?:^|\D)0$/.test(this.Display) &&
+          /(?:^|[^0-9.])0$/.test(this.Display) &&
           /\d+/.test(button.tokenData.value)
         ) {
           this.__expressionStack.pop();
@@ -195,10 +196,6 @@ export class CalculatorComponent implements OnInit, OnDestroy {
       return this.isValidSpecialButton(b);
     }
     if (b instanceof TokenButton) {
-      // Specific rules for '0'
-      if (/[^0-9.]0$/.test(this.Display) && /\d+/.test(b.value)) {
-        return false;
-      }
       return (this.__expressionStack.nextValidGroups() & b.tokenData.group) > 0;
     }
     return true;

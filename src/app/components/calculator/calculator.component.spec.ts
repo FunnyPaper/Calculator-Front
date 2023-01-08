@@ -111,7 +111,7 @@ describe('CalculatorComponent', () => {
 
     it('simple', () => {
       ans = '-10';
-      new TokenButton(new TokenData('-', ButtonGroup.UNARY_LEFT), '-');
+      new TokenButton(new TokenData('-', ButtonGroup.UNARY_LEFT | ButtonGroup.BINARY), '-');
       new TokenButton(new TokenData('1', ButtonGroup.NUMBER), '1');
       new TokenButton(new TokenData('0', ButtonGroup.NUMBER), '0');
       component.Ans = ans;
@@ -199,7 +199,7 @@ describe('CalculatorComponent', () => {
           new ButtonCustomEvent(new Event('click'), specialButtons[0])
         );
         expect(component['__expressionStack'].clear).toHaveBeenCalled();
-      })
+      });
 
       it('BACK', () => {
         spyOn(component['__expressionStack'], 'pop');
@@ -207,21 +207,21 @@ describe('CalculatorComponent', () => {
           new ButtonCustomEvent(new Event('click'), specialButtons[1])
         );
         expect(component['__expressionStack'].pop).toHaveBeenCalled();
-      })
+      });
 
       it('RAD', () => {
         component.dispatchButtonEvent(
           new ButtonCustomEvent(new Event('click'), specialButtons[2])
         );
         expect(component['__expressionStack'].Options).toEqual({ rad: true });
-      })
+      });
 
       it('DEG', () => {
         component.dispatchButtonEvent(
           new ButtonCustomEvent(new Event('click'), specialButtons[3])
         );
         expect(component['__expressionStack'].Options).toEqual({ rad: false });
-      })
+      });
 
       it('EQUALS', () => {
         spyOn(component as any, 'evaluate');
@@ -229,7 +229,7 @@ describe('CalculatorComponent', () => {
           new ButtonCustomEvent(new Event('click'), specialButtons[4])
         );
         expect(component['evaluate']).toHaveBeenCalled();
-      })
+      });
 
       it('ANS', () => {
         spyOn(component, 'appendAns');
@@ -237,12 +237,73 @@ describe('CalculatorComponent', () => {
           new ButtonCustomEvent(new Event('click'), specialButtons[5])
         );
         expect(component.appendAns).toHaveBeenCalled();
-      })
-
+      });
     });
   });
 
   describe('isValidButton', () => {
-    describe('isValidSpecialButton', () => {});
+    beforeEach(() => {
+      component['__expressionStack'].clear();
+    });
+
+    it('valid token', () => {
+      expect(
+        component.isValidButton(
+          new TokenButton(new TokenData('1', ButtonGroup.NUMBER), '1')
+        )
+      ).toBeTruthy();
+    });
+
+    it('invalid token', () => {
+      expect(
+        component.isValidButton(
+          new TokenButton(new TokenData('1', ButtonGroup.CLOSE_BRACKET), '1')
+        )
+      ).not.toBeTruthy();
+    });
+
+    describe('isValidSpecialButton', () => {
+      it('RAD', () => {
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.RAD, ''))
+        ).toEqual(!component['__expressionStack'].Options.rad!);
+      });
+
+      it('DEG', () => {
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.DEG, ''))
+        ).toEqual(component['__expressionStack'].Options.rad!);
+      });
+
+      it('EQUALS', () => {
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.EQUALS, ''))
+        ).toEqual(component['__expressionStack'].isValid);
+      });
+
+      it('rest', () => {
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.AC, ''))
+        ).toBeTruthy();
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.BACK, ''))
+        ).toBeTruthy();
+        expect(
+          component.isValidButton(new SpecialButton(SpecialToken.ANS, ''))
+        ).toBeTruthy();
+      });
+    });
+  });
+
+  it('key detected', async () => {
+    const keyEvent = new KeyboardEvent('keydown', { code: 'Digit1' });
+    new SpecialButton(SpecialToken.ANS, 'Digit1');
+    spyOn(component, 'onKeyDown').withArgs(keyEvent);
+    document.dispatchEvent(keyEvent);
+    fixture.detectChanges();
+
+    fixture.whenStable().then(() => {
+      expect(component.onKeyDown).toHaveBeenCalledWith(keyEvent);
+    });
   });
 });
