@@ -10,13 +10,14 @@ import { ButtonGroup } from 'src/app/enums/button-group.enum';
 import { SpecialToken } from 'src/app/enums/special-token.enum';
 import ButtonCustomEvent from 'src/app/events/button-custom-event.event';
 import IButtonLayout from 'src/app/interfaces/button-layout.interface';
+import { ICombinationKeyData } from 'src/app/interfaces/combination-key-data.interface';
 import IExpressionRecord from 'src/app/interfaces/expression-record.interface';
 import IFunctionData from 'src/app/interfaces/function-data.interface';
-import { Button, ICombinationKeyData } from 'src/app/models/button.model';
+import { Button } from 'src/app/models/button.model';
 import { ExpressionStack } from 'src/app/models/expression-stack.model';
 import { SpecialButton } from 'src/app/models/special-button.model';
 import { TokenButton } from 'src/app/models/token-button.model';
-import TokenData from 'src/app/models/token-data.model';
+import { TokenData } from 'src/app/models/token-data.model';
 import { CalculatorService } from 'src/app/services/calculator.service';
 
 @Component({
@@ -178,8 +179,9 @@ export class CalculatorComponent implements OnInit, OnDestroy {
       if (button instanceof SpecialButton) {
         this.dispatchSpecialButton(button);
       } else if (button instanceof TokenButton) {
+        // Specific rules for '0'
         if (
-          /(?:^|\D)0$/.test(this.Display) &&
+          /(?:^|[^0-9.])0$/.test(this.Display) &&
           /\d+/.test(button.tokenData.value)
         ) {
           this.__expressionStack.pop();
@@ -194,10 +196,6 @@ export class CalculatorComponent implements OnInit, OnDestroy {
       return this.isValidSpecialButton(b);
     }
     if (b instanceof TokenButton) {
-      // Specific rules for '0'
-      if (/[^0-9.]0$/.test(this.Display) && /\d+/.test(b.value)) {
-        return false;
-      }
       return (this.__expressionStack.nextValidGroups() & b.tokenData.group) > 0;
     }
     return true;
@@ -206,16 +204,10 @@ export class CalculatorComponent implements OnInit, OnDestroy {
   private dispatchSpecialButton(button: SpecialButton) {
     switch (button.specialType) {
       case SpecialToken.AC:
-        {
           this.__expressionStack.clear();
-        }
         break;
       case SpecialToken.BACK:
-        {
           this.__expressionStack.pop();
-          if (this.__expressionStack.Stack.length === 0) {
-          }
-        }
         break;
       case SpecialToken.RAD:
         this.__expressionStack.Options = { rad: true };

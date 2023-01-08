@@ -1,24 +1,10 @@
-export interface ICombinationKeyData {
-  alt?: boolean;
-  ctrl?: boolean;
-  shift?: boolean;
-}
+import { IButton } from "../interfaces/button.interface";
+import { IKeyData } from "../interfaces/key-data.interface";
 
 const combination = {
   alt: false,
   ctrl: false,
   shift: false,
-}
-
-export interface IKeyData {
-  value: string;
-  combination?: ICombinationKeyData;
-}
-
-export interface IButton {
-  get key(): IKeyData | undefined;
-  get value(): string;
-  set value(value: string);
 }
 
 export abstract class Button implements IButton {
@@ -34,7 +20,7 @@ export abstract class Button implements IButton {
   static getRegisteredButton(
     key?: string
   ): [string, Button][] | Button | undefined {
-    if (key) {
+    if (key != null) {
       return Button.__buttonRegistry.get(key);
     }
 
@@ -46,7 +32,7 @@ export abstract class Button implements IButton {
   static getRegisteredKey(
     key?: IKeyData
   ): [IKeyData, Button][] | Button | undefined {
-    if (key) {
+    if (key != null) {
       return [...Button.__keysRegistry.entries()].find(
         (p) => JSON.stringify(p[0]) === JSON.stringify(key)
       )?.[1];
@@ -63,8 +49,5 @@ export abstract class Button implements IButton {
   }
   get value(): string {
     return this._value;
-  }
-  set value(value: string) {
-    this._value = value;
   }
 }

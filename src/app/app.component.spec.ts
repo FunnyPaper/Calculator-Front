@@ -13,6 +13,7 @@ describe('AppComponent', () => {
     }).compileComponents();
     appFixture = TestBed.createComponent(AppComponent);
     appComponent = appFixture.componentInstance;
+    appFixture.detectChanges();
   });
 
   it('app should be defined', () => {

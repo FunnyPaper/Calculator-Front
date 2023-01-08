@@ -1,6 +1,6 @@
 import { ButtonGroup } from '../enums/button-group.enum';
 
-export default class TokenData {
+export class TokenData {
   private static readonly __tokenDataRegistry: Map<string, TokenData> = new Map();
   constructor(
     private readonly __value: string,
@@ -13,7 +13,7 @@ export default class TokenData {
     ) {
       throw new Error('Invalid token group');
     }
-    TokenData.__tokenDataRegistry.set(this.__value, this);
+    TokenData.setRegisteredTokenData(this.__value, this);
   }
   get value(): string {
     return this.__value;
@@ -30,13 +30,13 @@ export default class TokenData {
     );
   }
   static getRegisteredTokenData(key?: string): [string, TokenData][] | TokenData | undefined {
-    if (key) {
+    if (key != null) {
       return TokenData.__tokenDataRegistry.get(key);
     }
 
     return [...TokenData.__tokenDataRegistry.entries()];
   }
-  static setRegisteredTokenData(key: string, button: TokenData): void {
-    TokenData.__tokenDataRegistry.set(key, button);
+  static setRegisteredTokenData(key: string, data: TokenData): void {
+    TokenData.__tokenDataRegistry.set(key, data);
   }
 }

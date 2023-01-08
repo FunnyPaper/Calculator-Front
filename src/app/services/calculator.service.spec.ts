@@ -10,8 +10,6 @@ import IExpressionRecord from '../interfaces/expression-record.interface';
 describe('CalculatorService', () => {
   let httpTestingController: HttpTestingController;
   let calculatorService: CalculatorService;
-  let path: string;
-  let method: string;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -22,15 +20,13 @@ describe('CalculatorService', () => {
     calculatorService = TestBed.inject(CalculatorService);
   });
 
-  afterEach(() => {
-    httpTestingController.verify();
-  });
-
   it('should be created', () => {
     expect(calculatorService).toBeTruthy();
   });
 
   describe('POST /evaluate', () => {
+    let path: string;
+    let method: string;
     beforeEach(() => {
       path = '/evaluate';
       method = 'POST'
@@ -40,7 +36,7 @@ describe('CalculatorService', () => {
       httpTestingController.verify();
     });
 
-    it('should return expression result', () => {
+    it('should return expression result', (done) => {
       const expression: string = '2+2*2';
       const expectation: string = '6';
 
@@ -49,7 +45,7 @@ describe('CalculatorService', () => {
         .subscribe({
           next: (result) => expect(result).toEqual(expectation),
           error: fail,
-        });
+        }).add(done);
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -57,7 +53,7 @@ describe('CalculatorService', () => {
       req.flush(expectation);
     });
 
-    it('should return 0 if result is empty', () => {
+    it('should return 0 if result is empty', (done) => {
       const expression: string = '0';
       const expectation: string = '0';
       const response: string = '0';
@@ -65,7 +61,7 @@ describe('CalculatorService', () => {
       calculatorService.evaluate({ expression }).subscribe({
         next: (result) => expect(result).toEqual(expectation),
         error: fail,
-      });
+      }).add(done);
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -73,13 +69,13 @@ describe('CalculatorService', () => {
       req.flush(response);
     });
 
-    it('should return Error Observable if expression was empty', () => {
+    it('should return Error Observable if expression was empty', (done) => {
       const expression: string = '';
 
       calculatorService.evaluate({ expression }).subscribe({
         next: fail,
         error: (e) => expect(e).toEqual('Empty expression has been sent'),
-      });
+      }).add(done);
 
       httpTestingController.expectNone(path);
     });
@@ -87,6 +83,8 @@ describe('CalculatorService', () => {
 
   describe('GET /history', () => {
     let records: IExpressionRecord[];
+    let path: string;
+    let method: string;
 
     beforeEach(() => {
       path = '/history';
@@ -110,13 +108,13 @@ describe('CalculatorService', () => {
       httpTestingController.verify();
     });
 
-    it('should return be equal', () => {
+    it('should return be equal', (done) => {
       calculatorService
         .history(records.length)
         .subscribe({
           next: (r: IExpressionRecord[]) => expect(r).toEqual(records),
-          error: fail,
-        });
+          error: fail
+        }).add(() => done());
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -124,13 +122,13 @@ describe('CalculatorService', () => {
       req.flush(records);
     });
 
-    it('should return 5 elements', () => {
+    it('should return 5 elements', (done) => {
       calculatorService
         .history(5)
         .subscribe({
           next: (r: IExpressionRecord[]) => expect(r.length).toEqual(5),
           error: fail,
-        });
+        }).add(() => done());
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -138,13 +136,13 @@ describe('CalculatorService', () => {
       req.flush(records);
     });
 
-    it('should return 10 elements if count is unspecified', () => {
+    it('should return 10 elements if count is unspecified', (done) => {
       calculatorService
         .history()
         .subscribe({
           next: (r: IExpressionRecord[]) => expect(r.length).toEqual(10),
           error: fail,
-        });
+        }).add(() => done());
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -152,13 +150,13 @@ describe('CalculatorService', () => {
       req.flush(records);
     });
 
-    it('should return entire history if it\'s less than specified count', () => {
+    it('should return entire history if it\'s less than specified count', (done) => {
       calculatorService
         .history(records.length * 2)
         .subscribe({
           next: (r: IExpressionRecord[]) => expect(r.length).toEqual(records.length),
           error: fail,
-        });
+        }).add(() => done());
 
       const req = httpTestingController.expectOne(path);
       expect(req.request.method).toEqual(method);
@@ -166,13 +164,13 @@ describe('CalculatorService', () => {
       req.flush(records);
     });
 
-    it('should return Observable Error if count is non positive', () => {
+    it('should return Observable Error if count is non positive', (done) => {
       calculatorService
         .history(-1)
         .subscribe({
           next: fail,
           error: (e) => expect(e).toEqual('Count must be a positive integer'),
-        });
+        }).add(() => done());
 
       httpTestingController.expectNone(path);
     });

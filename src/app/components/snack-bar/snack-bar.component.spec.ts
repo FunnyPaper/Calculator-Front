@@ -1,6 +1,11 @@
+import { AppModule } from './../../app.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import {
+  MatSnackBarRef,
+  MAT_SNACK_BAR_DATA,
+} from '@angular/material/snack-bar';
 import { SnackBarComponent } from './snack-bar.component';
+import { By } from '@angular/platform-browser';
 
 describe('SnackBarComponent', () => {
   let component: SnackBarComponent;
@@ -8,9 +13,13 @@ describe('SnackBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SnackBarComponent ]
-    })
-    .compileComponents();
+      declarations: [SnackBarComponent],
+      imports: [AppModule],
+      providers: [
+        { provide: MatSnackBarRef<SnackBarComponent>, useValue: {} },
+        { provide: MAT_SNACK_BAR_DATA, useValue: {} },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SnackBarComponent);
     component = fixture.componentInstance;
@@ -19,5 +28,26 @@ describe('SnackBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('close called', async () => {
+    spyOn(component, 'closeBar');
+    fixture.debugElement.query(By.css('.main__button div')).nativeElement.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    fixture.whenStable().then(() => {
+      expect(component.closeBar).toHaveBeenCalled();
+    });
+  });
+
+  it('key detected', async () => {
+    const keyEvent = new KeyboardEvent('keydown');
+    spyOn(component, 'onKeyDown').withArgs(keyEvent);
+    document.dispatchEvent(keyEvent);
+    fixture.detectChanges();
+
+    fixture.whenStable().then(() => {
+      expect(component.onKeyDown).toHaveBeenCalledWith(keyEvent);
+    });
   });
 });

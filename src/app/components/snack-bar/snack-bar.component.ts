@@ -17,6 +17,7 @@ export class SnackBarComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
+    console.log('o')
     if(event.code === 'Escape') {
       this.close();
     }

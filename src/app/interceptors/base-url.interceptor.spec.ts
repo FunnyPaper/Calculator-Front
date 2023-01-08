@@ -1,7 +1,7 @@
 import environment from 'src/environments/environment';
 import { HttpHandler, HttpRequest, HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import BaseUrlInterceptor from './base-url.interceptor'
+import { BaseUrlInterceptor } from './base-url.interceptor'
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
@@ -41,8 +41,8 @@ describe('BaseUrlInterceptor', () => {
     controller.verify();
   });
 
-  it(`check url for api starts with ${environment.baseUrl}`, () => {
-    client.get(testUrl).subscribe();
+  it(`check url for api starts with ${environment.baseUrl}`, (done) => {
+    client.get(testUrl).subscribe().add(done);
 
     const req = controller.expectOne(`${environment.baseUrl}${testUrl}`);
     expect(req.request.url).toEqual(`${environment.baseUrl}${testUrl}`);

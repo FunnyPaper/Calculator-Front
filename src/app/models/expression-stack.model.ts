@@ -3,7 +3,7 @@ import {
   IExpressionData,
 } from './../interfaces/expression-data.interface';
 import { ButtonGroup, NextGroup } from '../enums/button-group.enum';
-import TokenData from './token-data.model';
+import { TokenData } from './token-data.model';
 
 /**
  * Pseudo stack with parser capabilities
