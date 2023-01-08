@@ -207,16 +207,10 @@ export class CalculatorComponent implements OnInit, OnDestroy {
   private dispatchSpecialButton(button: SpecialButton) {
     switch (button.specialType) {
       case SpecialToken.AC:
-        {
           this.__expressionStack.clear();
-        }
         break;
       case SpecialToken.BACK:
-        {
           this.__expressionStack.pop();
-          if (this.__expressionStack.Stack.length === 0) {
-          }
-        }
         break;
       case SpecialToken.RAD:
         this.__expressionStack.Options = { rad: true };

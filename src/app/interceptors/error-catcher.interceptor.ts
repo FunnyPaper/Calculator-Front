@@ -25,7 +25,6 @@ export class ErrorCatcherInterceptor implements HttpInterceptor {
           panelClass: ['error-snack-bar']
         })
       }
-
       return throwError(() => error);
     }));
   }

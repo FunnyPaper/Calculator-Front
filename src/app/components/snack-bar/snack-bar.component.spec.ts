@@ -5,6 +5,7 @@ import {
   MAT_SNACK_BAR_DATA,
 } from '@angular/material/snack-bar';
 import { SnackBarComponent } from './snack-bar.component';
+import { By } from '@angular/platform-browser';
 
 describe('SnackBarComponent', () => {
   let component: SnackBarComponent;
@@ -27,5 +28,26 @@ describe('SnackBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('close called', async () => {
+    spyOn(component, 'closeBar');
+    fixture.debugElement.query(By.css('.main__button div')).nativeElement.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    fixture.whenStable().then(() => {
+      expect(component.closeBar).toHaveBeenCalled();
+    });
+  });
+
+  it('key detected', async () => {
+    const keyEvent = new KeyboardEvent('keydown');
+    spyOn(component, 'onKeyDown').withArgs(keyEvent);
+    document.dispatchEvent(keyEvent);
+    fixture.detectChanges();
+
+    fixture.whenStable().then(() => {
+      expect(component.onKeyDown).toHaveBeenCalledWith(keyEvent);
+    });
   });
 });

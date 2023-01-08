@@ -1,26 +1,23 @@
-import { SnackBarComponent } from './../components/snack-bar/snack-bar.component';
-import { AppModule } from './../app.module';
-import { AppComponent } from './../app.component';
 import { HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { TestBed, inject, waitForAsync } from '@angular/core/testing';
 import { ErrorCatcherInterceptor } from './error-catcher.interceptor';
-import { By } from '@angular/platform-browser';
 import environment from 'src/environments/environment';
+import { OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
+import { AppModule } from '../app.module';
 
 describe('ErrorCatcherInterceptor', () => {
-  let testUrl: string = '';
+  let error: string = 'testing error';
   let controller: HttpTestingController;
   let client: HttpClient;
-  let component: ComponentFixture<AppComponent>;
+  let container: OverlayContainer;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [AppComponent],
-      imports: [HttpClientTestingModule, AppModule],
+  beforeEach(waitForAsync(async () => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, OverlayModule, AppModule],
       providers: [
         {
           provide: HTTP_INTERCEPTORS,
@@ -31,28 +28,37 @@ describe('ErrorCatcherInterceptor', () => {
     }).compileComponents();
     controller = TestBed.inject(HttpTestingController);
     client = TestBed.inject(HttpClient);
-    component = TestBed.createComponent(AppComponent);
-    component.detectChanges();
-  });
+  }));
+
+  beforeEach(inject([OverlayContainer], (c: OverlayContainer) => {
+    container = c;
+  }));
 
   afterEach(() => {
     controller.verify();
   });
 
   it(`check error catcher creates SnackBarComponent with error`, (done) => {
-    const debug = component.debugElement;
-    client.get('').subscribe({
-      next: fail,
-      error: () => {
-        const snackBar: SnackBarComponent = debug.query(
-          By.directive(SnackBarComponent)
-        ).componentInstance;
-        expect(snackBar.error).toEqual('test');
-      },
-    }).add(done);
+    client
+      .get('')
+      .subscribe({
+        next: fail,
+        error: () => {
+          const snackBar = container
+            .getContainerElement()
+            .querySelector('app-snack-bar');
+          expect(snackBar).toBeTruthy();
+          const main = snackBar?.querySelector('.main__message');
+          expect(main).toBeTruthy();
+          const message = main?.firstChild;
+          expect(message).toBeTruthy();
+          expect(message?.textContent?.trim()).toEqual(error);
+        },
+      })
+      .add(done);
 
     const req = controller.expectOne(environment.baseUrl);
 
-    req.flush('', { status: 500, statusText: 'test', headers: { error: 'test' }});
+    req.flush(error, { status: 500, statusText: 'Server error' });
   });
 });
