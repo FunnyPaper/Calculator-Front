@@ -71,7 +71,7 @@ export class CalculatorComponent implements OnInit, OnDestroy {
    */
   get Display(): string {
     return this.__expressionStack.Stack.map(
-      (t) => (TokenButton.getRegisteredTokenButton(t) as TokenButton).value
+      (t) => (TokenButton.getRegisteredTokenButton(t) as TokenButton)?.value
     ).join('');
   }
 

@@ -1,0 +1,351 @@
+@startuml
+
+hide empty members
+skinparam nodesep 10
+skinparam ranksep 20
+
+package components {
+  package calculator {
+    +class CalculatorComponent {
+      --Fields--
+      +{field} ButtonLayout : IButtonLayout[]
+      +{field} FunctionData : IFunctionData[]
+      -{field} __calculatorServiceSubscriptions : Subscription
+      -{field} __expressionStack : ExpressionStack
+      -{field} __historyObservable$ : Observable<IExpressionRecord[]>
+      -{field} __ans : string
+      -{field} __calculatorService: CalculatorService
+      --Methods--
+      +{method} constructor(calculatorService: CalculatorService)
+      +{method} appendAns() : void
+      -{method} evaluate() : void
+      -{method} updateHistory() : void
+      +{method} dispatchButtonEvent(e: ButtonCustomEvent) : void
+      -{method} dispatchButton(...buttons: Button[]) : void
+      -{method} isValidButton(b: Button) : boolean
+      -{method} dispatchSpecialButton(button: SpecialButton) : void
+      -{method} isValidSpecialButton(button: SpecialButton) : boolean
+      --Accessors--
+      +{method} set Ans(value: string)
+      +{method} get Ans() : string
+      +{method} get ButtonsLayout() : IButtonLayout[]
+      +{method} get HistoryObservable$() : Observable<IExpressionRecord[]>
+      +{method} get Display(): string
+      --Overrides--
+      +{method} ngOnInit() : void
+      +{method} ngOnDestroy() : void
+      --Events--
+      +{method} onKeyDown(event: KeyboardEvent) : void
+    }
+  }
+  package snack-bar {
+    +class SnackBarComponent {
+      --Fields--
+      +{field} snackBarRef : MatSnackBarRef<SnackBarComponent>
+      +{field} error : any
+      --Methods--
+      +{method} constructor(
+          snackBarRef: MatSnackBarRef<SnackBarComponent>, error: any
+        )
+      +{method} close() : void
+      --Events--
+      +{method} onKeyDown(event: KeyboardEvent) : void
+    }
+  }
+}
+package directives {
+  +class CustomButtonClassDirective {
+    --Fields--
+    +{field} toBeReplaced : string;
+    +{field} string : string;
+    +{field} customButton : Button;
+    +{field} classes : string;
+    --Methods--
+    +{method} getScssModifier(b: Button) : string
+    --Overrides--
+    +{method} ngOnInit() : void
+  }
+  +class CustomClickDirective {
+    --Fields--
+    +{field} buttonData: Button
+    +{field} customClick: EventEmitter<ButtonCustomEvent>
+    --Events--
+    +{method} onCustomClick(event: Event)
+  }
+}
+package enums {
+  +enum ButtonGroup {
+    NONE = 0,
+    DOT = 1 << 0,
+    NUMBER = 1 << 1,
+    UNARY_LEFT = 1 << 2,
+    UNARY_RIGHT = 1 << 3,
+    BINARY = 1 << 4,
+    FUNCTION = 1 << 5,
+    CONSTANT = 1 << 6,
+    SEPARATOR = 1 << 7,
+    OPEN_BRACKET = 1 << 8,
+    CLOSE_BRACKET = 1 << 9,
+  }
+  +enum SpecialToken {
+    AC,
+    BACK,
+    RAD,
+    DEG,
+    EQUALS,
+    ANS
+  }
+}
+package events {
+  +class ButtonCustomEvent {
+    --Fields--
+    +{field} event : Event
+    +{field} buttonData : Button
+    --Methods--
+    constructor(event: Event, buttonData: Button)
+  }
+}
+package interceptors {
+  +class BaseUrlInterceptor {
+    --Overrides--
+    +{method} intercept(req: HttpRequest<any>, next: HttpHandler) : Observable<HttpEvent<any>>
+  }
+  +class ErrorCatcherInterceptor {
+    --Fields--
+    -{field} __snackBar : MatSnackBar
+    -{field} __injector : Injector
+    --Methods--
+    +{method} constructor(__injector: Injector)
+    --Overrides--
+    +{method} intercept(request: HttpRequest<unknown>, next: HttpHandler) : Observable<HttpEvent<unknown>>
+  }
+}
+package interfaces {
+  +interface IButtonLayout {
+    --Fields--
+    +{field} label : string
+    +{field} buttons : Button[]
+  }
+  +interface IButton {
+    --Accessors--
+    +{method} get key() : IKeyData | undefined
+    +{method} get value() : string
+    +{method} set value(value: string)
+  }
+  +interface ICombinationKeyData {
+    --Fields--
+    +{field} alt? : boolean
+    +{field} ctrl? : boolean
+    +{field} shift? : boolean
+  }
+  +interface IExpressionOptions {
+    --Fields--
+    +{field} rad? : boolean
+  }
+  +interface IExpressionData {
+    --Fields--
+    +{field} expression : string
+    +{field} options? : IExpressionOptions
+  }
+  +interface IExpressionRecord {
+    --Fields--
+    +{field} expression : string
+    +{field} result : string
+  }
+  +interface IFunctionData {
+    --Fields--
+    +{field} key : string
+    +{field} args? : { min?: number; max?: number }
+  }
+  +interface IKeyData {
+    --Fields--
+    +{field} value : string
+    +{field} combination? : ICombinationKeyData
+  }
+}
+package models {
+  +abstract class Button implements IButton {
+    --Fields--
+    -{field} {static} __buttonRegistry : Map<string, Button>
+    -{field} {static} __keysRegistry : Map<IKeyData, Button>
+    #{field} _value : string
+    #{field} _keyData? : IKeyData
+    --Methods--
+    +{method} constructor(_value: string, _keyData?: IKeyData)
+    +{method} {static} getRegisteredButton(
+      key?: string
+    ) : [string, Button][] | Button | undefined
+    +{method} {static} setRegisteredButton(key: string, button: Button) : void
+    +{method} {static} getRegisteredKey(
+      key?: IKeyData
+    ) : [IKeyData, Button][] | Button | undefined
+    +{method} {static} setRegisteredKey(keyData: IKeyData, buttonData: Button) : void
+    --Accessors--
+    +{method} get key() : IKeyData | undefined
+    +{method} get value() : string
+  }
+  +class ExpressionStack {
+    --Fields--
+    -{field} __stack : TokenData[]
+    -{field} __valid : boolean
+    -{field} __options : IExpressionOptions
+    -{field} __functions : Map<string, { min: number; max: number }>
+    --Methods--
+    +{method} constructor()
+    +{method} append(...buttons: TokenData[]) : void
+    +{method} pop() : void
+    +{method} clear() : void
+    +{method} registerFunction({
+      key, args
+    }: {
+      key: string;
+      args?: { min?: number; max?: number };
+    }): void
+    +{method} unregisterFunction(functionKey: string) : void
+    -{method} checkArgs() : { separator: boolean; close_bracket: boolean }
+    -{method} checkDot() : boolean
+    +{method} nextValidGroups() : ButtonGroup
+    --Accessors--
+    +{method} get Options() : IExpressionOptions
+    +{method} set Options(options: IExpressionOptions)
+    +{method} get Expression() : IExpressionData
+    +{method} get isValid() : boolean
+    +{method} get Stack() : TokenData[]
+  }
+  +interface ISpecialButton implements IButton {
+    --Accessors--
+    +{method} get specialType() : SpecialToken;
+  }
+  +class SpecialButton extends Button implements ISpecialButton {
+    --Fields--
+    #{field} _specialType : SpecialToken
+    --Methods--
+    +{method} constructor(_specialType: SpecialToken, value: string, keyData?: IKeyData)
+    --Accessors--
+    +{method} get specialType() : SpecialToken
+  }
+  +interface ITokenButton extends IButton {
+    --Accessors--
+    +{method} get tokenData() : TokenData;
+  }
+  +class TokenButton extends Button implements ITokenButton {
+    --Fields--
+    -{field} {static} __tokenDataRegistry : Map<TokenData, TokenButton>
+    #{field} _token : TokenData
+    --Methods--
+    +{method} constructor(_token: TokenData, value: string, keyData?: IKeyData)
+    +{method} {static} setRegisteredTokenButton(key: TokenData, button: TokenButton) : void
+    +{method} {static} getRegisteredTokenButton(
+      key?: TokenData
+    ): [TokenData, TokenButton][] | TokenButton | undefined
+    --Accessors--
+    +{method} get tokenData() : TokenData
+  }
+  +class TokenData {
+    --Fields--
+    -{field} {static} __tokenDataRegistry : Map<string, TokenData>
+    -{field} __value: string
+    -{field} __group: ButtonGroup
+    --Methods--
+    +{method} constructor(__value: string, __group: ButtonGroup)
+    +{method} {static} getRegisteredTokenData(key?: string) : [string, TokenData][] | TokenData | undefined
+    +{method} {static} setRegisteredTokenData(key: string, data: TokenData): void
+    --Accessors--
+    +{method} get value() : string
+    +{method} get group() : ButtonGroup
+    +{method} {static} get Regex() : RegExp
+  }
+}
+package pipes {
+  +class BitwiseAndPipe {
+    --Overrides--
+    +{method} transform(value: number, ...args: number[]) : number
+  }
+  +class BitwiseOrPipe {
+    --Overrides--
+    +{method} transform(value: number, ...args: number[]) : number
+  }
+}
+package services {
+  +class CalculatorService {
+    --Fields--
+    -{field} __httpClient : HttpClient
+    --Methods--
+    +{method} constructor(__httpClient: HttpClient)
+    +{method} evaluate(expression: IExpressionData) : Observable<string>
+    +{method} history(count: number) : Observable<IExpressionRecord[]>
+  }
+}
+
+class AppComponent {
+  --Fields--
+  -{field} __buttonsLayout : IButtonLayout[]
+  -{field} __buttonMapping : Map<TokenData, TokenButton>
+  -{field} __functionData : IFunctionData[]
+  --Methods--
+  +{method} constructor()
+  -{method} registerFunctions() : void
+  -{method} createButtonMapping() : void
+  -{method} registerButtons() : void
+  --Accessors--
+  +{method} get ButtonsLayout() : IButtonLayout[]
+  +{method} get ButtonMapping() : Map<TokenData, TokenButton>
+  +{method} get FunctionData() : IFunctionData[]
+}
+
+CalculatorComponent "*" o-- "*" IButtonLayout
+CalculatorComponent "*" o-- "*" IFunctionData
+CalculatorComponent "1" *-- "1" ExpressionStack
+CalculatorComponent "*" o-- "*" IExpressionRecord
+CalculatorComponent "*" o-- "1" CalculatorService
+CalculatorComponent "*" <-- "1.." ButtonCustomEvent
+CalculatorComponent "*" <-- "*" Button
+CalculatorComponent "*" <-- "*" SpecialButton
+
+CustomButtonClassDirective "*" o-- "1" Button
+CustomButtonClassDirective "*" <-- "1" Button
+
+CustomClickDirective "*" o-- "1" Button
+CustomClickDirective "*" <- "1" ButtonCustomEvent
+
+ButtonCustomEvent "1" o-- "*" Button
+
+ErrorCatcherInterceptor "1" <-- "*" SnackBarComponent
+
+IButtonLayout "*" o-- "*" Button
+
+IButton "*" <-- "1" IKeyData
+
+IExpressionData "*" o-- "1" IExpressionOptions
+
+IKeyData "*" o-- "1" ICombinationKeyData
+
+Button "*" o-- "1" IKeyData
+
+ExpressionStack "1" *-- "*" TokenData
+ExpressionStack "1" *-- "1" IExpressionOptions
+ExpressionStack "1" <-- "1" IExpressionData
+ExpressionStack "*" <-- "*" IFunctionData
+ExpressionStack "*" <--- "*" ButtonGroup
+
+SpecialButton "*" <-- "1" IKeyData
+SpecialButton "*" o-- "1" SpecialToken
+
+TokenButton "*" o-- "1" TokenData
+TokenButton "*" <-- "1" IKeyData
+
+TokenData "*" o-- "1" ButtonGroup
+
+CalculatorService "*" <- "1" IExpressionData
+CalculatorService "*" <-- "1" IExpressionRecord
+
+AppComponent "1" *- "*" IButtonLayout
+AppComponent "1" *- "*" IFunctionData
+AppComponent "1" *-- "*" TokenButton
+AppComponent "1" *-- "*" TokenData
+
+pipes -[hidden]left-> interceptors
+pipes -[hidden]right- components
+BitwiseOrPipe -[hidden]down-> BitwiseAndPipe
+
+@enduml

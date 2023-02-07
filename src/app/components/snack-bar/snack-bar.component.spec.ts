@@ -31,12 +31,12 @@ describe('SnackBarComponent', () => {
   });
 
   it('close called', async () => {
-    spyOn(component, 'closeBar');
-    fixture.debugElement.query(By.css('.main__button div')).nativeElement.dispatchEvent(new Event('click'));
+    spyOn(component, 'close');
+    fixture.debugElement.query(By.css('.bar__button div')).nativeElement.dispatchEvent(new Event('click'));
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {
-      expect(component.closeBar).toHaveBeenCalled();
+      expect(component.close).toHaveBeenCalled();
     });
   });
 

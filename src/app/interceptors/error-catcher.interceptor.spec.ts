@@ -48,7 +48,7 @@ describe('ErrorCatcherInterceptor', () => {
             .getContainerElement()
             .querySelector('app-snack-bar');
           expect(snackBar).toBeTruthy();
-          const main = snackBar?.querySelector('.main__message');
+          const main = snackBar?.querySelector('.bar__error');
           expect(main).toBeTruthy();
           const message = main?.firstChild;
           expect(message).toBeTruthy();
