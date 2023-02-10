@@ -1,6 +1,6 @@
 # CalculatorFront
 
-Projekt stworzony z pomocą [Angular CLI](https://github.com/angular/angular-cli) wersja 15.0.2.
+Projekt stworzony z pomocą [Visual Studio Code](https://code.visualstudio.com) i [Angular CLI](https://github.com/angular/angular-cli) wersja 15.0.2.
 
 ## Zależności projektu
 
