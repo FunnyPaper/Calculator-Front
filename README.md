@@ -16,10 +16,25 @@ lub (problem ze ścieżkami):
     npm run start
 
 ## Obsługiwane ścieżki
-- POST /evaluate
-: Przesyła wyrażenia matematyczne w postaci string
+- POST /evaluate 
+: Przesyła wyrażenie matematyczne w postaci json
+```javascript
+    {
+        expression: string,
+        options?: {
+            radians?: boolean
+        }
+    }
+```
+
 - GET /history
 : Przyjmuje dane w postaci json
+```javascript
+    {
+        expression: string,
+        result: string
+    }
+```
 
 ## Uruchamianie testów
 Testy wykonane z pomocą środowiska [Karma](https://karma-runner.github.io):
